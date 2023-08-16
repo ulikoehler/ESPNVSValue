@@ -1,0 +1,26 @@
+{
+    "name": "ESPNVSValue",
+    "version": "1.0",
+    "description": "ESP32 Non-volatile storage high-level API which allows easy mapping from custom types to NVS entries.",
+    "keywords": "SPI, Wire, Arduino",
+    "repository":
+    {
+      "type": "git",
+      "url": "https://github.com/ulikoehler/ESPNVSValue.git"
+    },
+    "authors":
+    [
+      {
+        "name": "Uli Köhler",
+        "email": "github@techoverflow.net",
+        "url": "https://techoverflow.net",
+        "maintainer": true
+      }
+    ],
+    "license": "Apache-2.0",
+    "homepage": "https://github.com/ulikoehler/ESPNVSValue",
+    "dependencies": {
+    },
+    "frameworks": "arduino",
+    "platforms": "espressif32"
+}
