@@ -87,7 +87,7 @@ public:
      */
     void updateFromNVS() {
         // For debugging
-        NVSPrintf(NVSLogLevel::Trace, "Reading key %s", key.c_str());
+        NVSPrintf(NVSLogLevel::Trace, "Reading key %s", _key.c_str());
         if(nvs == std::numeric_limits<nvs_handle_t>::max()) {
             NVSPrintf(NVSLogLevel::Critical, "Invalid NVS instance");
             return;
@@ -102,7 +102,7 @@ public:
          */
         // Step 1: Get size of key
         size_t value_size = 0;
-        switch(NVSValueSize(nvs, key, value_size)) {
+        switch(NVSValueSize(nvs, _key, value_size)) {
             case NVSQueryResult::OK: {
                 // Success. Just continue.
                 if(value_size == sizeof(T)) {
@@ -136,11 +136,11 @@ public:
             // We assume that the value did not change between reading the size (step 1) and now.
             // In case that assumption is value, this will fail with ESP_ERR_NVS_INVALID_LENGTH.
             // This is extremely unlikely in all usage scenarios, however.
-            NVSPrintf(NVSLogLevel::Warning, "Failed to read NVS key %s: %s", key.c_str(), esp_err_to_name(err));
+            NVSPrintf(NVSLogLevel::Warning, "Failed to read NVS key %s: %s", _key.c_str(), esp_err_to_name(err));
         }
         // Step 4: Make string
         // For debugging
-        NVSPrintf(NVSLogLevel::Debug, "Key %s exists in NVS and has value %s", key.c_str(), _value.c_str());
+        NVSPrintf(NVSLogLevel::Debug, "Key %s exists in NVS and has value %s", _key.c_str(), _value.c_str());
     }
 
     /**
