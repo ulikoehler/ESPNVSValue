@@ -3,7 +3,7 @@
 #include <string>
 #include <limits>
 
-#include "NVSValue.hpp"
+#include "NVSLog.hpp"
 
 /**
  * @brief Templated value stored in NVS
