@@ -2,7 +2,7 @@
     "name": "ESPNVSValue",
     "version": "1.0",
     "description": "ESP32 Non-volatile storage high-level API which allows easy mapping from custom types to NVS entries.",
-    "keywords": "NVS, Non-Volatile Storage, Arduino",
+    "keywords": "NVS, Non-Volatile Storage",
     "repository":
     {
       "type": "git",
