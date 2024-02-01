@@ -5,6 +5,7 @@
 
 #include "NVSLog.hpp"
 #include "NVSUtils.hpp"
+#include "NVSUpdateResult.hpp"
 
 /**
  * @brief Templated value stored in NVS
