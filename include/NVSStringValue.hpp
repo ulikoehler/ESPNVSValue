@@ -2,6 +2,8 @@
 #include <nvs.h>
 #include <string>
 
+#include "NVSResult.hpp"
+
 void NVSPrintf(const char* format, ...);
 
 /**
@@ -37,11 +39,9 @@ public:
      * 
      * @return const char* 
      */
-    const char* c_str() const;
-
-    bool empty() const;
-
-    size_t size() const;
+    inline const char* c_str() const { return _value.c_str(); }
+    inline bool empty() const { return _value.empty(); }
+    inline size_t size() const { return _value.size(); }
 
     /**
      * @brief Return whether the value exists in NVS
@@ -49,7 +49,7 @@ public:
      * @return true 
      * @return false 
      */
-    bool exists() const;
+    inline bool exists() const { return _exists; }
 
     /**
      * @brief Read the value from the NVS storage
@@ -72,20 +72,20 @@ public:
      * @brief Update the value in the NVS and in the current instance
      * The update is skipped if the new value is equal to the current value.
      */
-    SetResult set(const std::string& newValue);
+    NVSSetResult set(const std::string& newValue);
 
     /**
      * @brief Update the value in the NVS and in the current instance
      * The update is skipped if the new value is equal to the current value.
      */
-    SetResult set(const char* newValue);
+    NVSSetResult set(const char* newValue);
 
 
     /**
      * @brief Update the value in the NVS and in the current instance
      * The update is skipped if the new value is equal to the current value.
      */
-    SetResult set(const uint8_t* data, size_t size);
+    NVSSetResult set(const uint8_t* data, size_t size);
 
     nvs_handle_t nvs;
     std::string _key;

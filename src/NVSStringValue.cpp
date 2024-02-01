@@ -1,23 +1,31 @@
 #include "NVSStringValue.hpp"
 #include <limits>
 #include <cstring>
+#include "NVSUtils.hpp"
 
 NVSStringValue::NVSStringValue() : nvs(std::numeric_limits<nvs_handle_t>::max()), _key(), _value(), _exists(false) {
     // Not actually initialized. Can't read value from NVS
 }
 
 NVSStringValue::NVSStringValue(nvs_handle_t nvs, const std::string& key) : nvs(nvs), _key(key), _value() {
-    this->updateFromNVS();
+    // Update if we didn't copy from an empty instance
+    if(nvs != std::numeric_limits<nvs_handle_t>::max()) {
+        this->updateFromNVS();
+    }
 }
 
-NVSStringValue::NVSStringValue(NVSStringValue& copy): nvs(std::move(copy.nvs)), _key(std::move(copy._key)), _value(std::move(copy._value)), _exists(std::move(copy._exists)) {
+NVSStringValue::NVSStringValue(NVSStringValue& copy): nvs(copy.nvs), _key(copy._key), _value(copy._value), _exists(copy._exists) {
     // Read value from NVS
-    this->updateFromNVS();
+    if(nvs != std::numeric_limits<nvs_handle_t>::max()) {
+        this->updateFromNVS();
+    }
 }
 
-NVSStringValue::NVSStringValue(NVSStringValue&& copy): nvs(copy.nvs), _key(copy._key), _value(copy._value), _exists(copy._exists) {
+NVSStringValue::NVSStringValue(NVSStringValue&& copy): nvs(std::move(copy.nvs)), _key(std::move(copy._key)), _value(std::move(copy._value)), _exists(std::move(copy._exists)) {
     // Read value from NVS
-    this->updateFromNVS();
+    if(nvs != std::numeric_limits<nvs_handle_t>::max()) {
+        this->updateFromNVS();
+    }
 }
 
 NVSStringValue& NVSStringValue::operator=(NVSStringValue& copy) {
@@ -25,7 +33,9 @@ NVSStringValue& NVSStringValue::operator=(NVSStringValue& copy) {
     _key = copy._key;
     _value = copy._value;
 
-    this->updateFromNVS();
+    if(nvs != std::numeric_limits<nvs_handle_t>::max()) {
+        this->updateFromNVS();
+    }
     return *this;
 }
 
@@ -34,7 +44,9 @@ NVSStringValue& NVSStringValue::operator=(NVSStringValue&& copy) {
     _key = std::move(copy._key);
     _value = std::move(copy._value);
     
-    this->updateFromNVS();
+    if(nvs != std::numeric_limits<nvs_handle_t>::max()) {
+        this->updateFromNVS();
+    }
     return *this;
 }
 
@@ -44,10 +56,6 @@ const std::string& NVSStringValue::key() const {
 
 const std::string& NVSStringValue::value() const {
     return _value;
-}
-
-bool NVSStringValue::exists() const {
-    return _exists;
 }
 
 void NVSStringValue::updateFromNVS() {
@@ -66,22 +74,29 @@ void NVSStringValue::updateFromNVS() {
      *  5. Cleanup
      */
     // Step 1: Get size of key
-    esp_err_t err;
     size_t value_size = 0;
-    if((err = nvs_get_blob(nvs, _key.c_str(), nullptr, &value_size)) != ESP_OK) {
-        if(err == ESP_ERR_NVS_NOT_FOUND) {
+    switch(NVSValueSize(nvs, _key, value_size)) {
+        case NVSQueryResult::OK: {
+            // OK
+            _exists = true;
+            break;
+        }
+        case NVSQueryResult::NotFound: {
             // Not found, no error
             _exists = false;
             _value = "";
             NVSPrintf(NVSLogLevel::Debug, "Key %s does not exist", _key.c_str());
-        } else {
-            NVSPrintf(NVSLogLevel::Error, "Failed to get size of NVS key %s: %s", _key.c_str(), esp_err_to_name(err));
+            return;
+        }
+        case NVSQueryResult::Error: {
+            // Error
+            NVSPrintf(NVSLogLevel::Error, "Failed to get size of NVS key %s", _key.c_str());
             return;
         }
     }
     // For debugging
     NVSPrintf(NVSLogLevel::Trace, "Found that NVS key %s has value size %d", _key.c_str(), value_size);
-    // Step 2: Allocate temporary buffer to read from
+    // Step 2: Allocate temporary buffer to read into
     char* buf = (char*)malloc(value_size);
     // Step 3: Read value into temporary buffer.
     if((err = nvs_get_blob(nvs, _key.c_str(), buf, &value_size)) != ESP_OK) {
@@ -159,25 +174,3 @@ NVSUpdateResult NVSStringValue::set(const char* newValue) {
     nvs_commit(nvs);
     return NVSUpdateResult::Updated;
 }
-
-
-const char* NVSStringValue::c_str() const {
-    return _value.c_str();
-}
-
-bool NVSStringValue::empty() const {
-    return _value.empty();
-}
-
-size_t NVSStringValue::size() const {
-    return _value.size();
-};
-
-
-enum class SetResult {
-    Updated = 0,
-    Unchanged = 1,
-    NotInitialized = -1,
-    Nullptr = -2,
-    Error = -3
-};

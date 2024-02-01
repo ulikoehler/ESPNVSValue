@@ -21,3 +21,9 @@ const char* NVSLogLevelToString(NVSLogLevel level);
  * You can specify your own function
  */
 void NVSPrintf(NVSLogLevel level, const char * format, ... );
+
+/**
+ * Set the global log level for the ESPNVSValue library.
+ * All log levels greater than the specified level will be ignored.
+ */
+void NVSSetLogLevel(NVSLogLevel level);
