@@ -118,12 +118,12 @@ public:
             case NVSQueryResult::NotFound: {
                 // Not found, no error
                 NVSPrintf(NVSLogLevel::Debug, "Key %s does not exist", _key.c_str());
-                return nullptr;
+                return;
             }
             case NVSQueryResult::Error: {
                 // Error
                 NVSPrintf(NVSLogLevel::Error, "Failed to get size of NVS key %s", _key.c_str());
-                return nullptr;
+                return;
             }
         }
         // For debugging
