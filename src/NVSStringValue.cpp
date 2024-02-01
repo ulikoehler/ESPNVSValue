@@ -3,7 +3,7 @@
 #include <cstring>
 
 #include "NVSUtils.hpp"
-#include "NVSSetResult.hpp"
+#include "NVSResult.hpp"
 #include "NVSLog.hpp"
 
 NVSStringValue::NVSStringValue() : nvs(std::numeric_limits<nvs_handle_t>::max()), _key(), _value(), _exists(false) {
