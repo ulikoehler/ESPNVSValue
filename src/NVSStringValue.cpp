@@ -102,6 +102,7 @@ void NVSStringValue::updateFromNVS() {
     // Step 2: Allocate temporary buffer to read into
     char* buf = (char*)malloc(value_size);
     // Step 3: Read value into temporary buffer.
+    esp_err_t err;
     if((err = nvs_get_blob(nvs, _key.c_str(), buf, &value_size)) != ESP_OK) {
         // "Doesn't exist" has already been handled before, so this is an actual error.
         // We assume that the value did not change between reading the size (step 1) and now.
