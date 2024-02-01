@@ -4,6 +4,7 @@
 #include <limits>
 
 #include "NVSLog.hpp"
+#include "NVSUtils.hpp"
 
 /**
  * @brief Templated value stored in NVS
@@ -15,25 +16,25 @@ class NVSValue {
 public:
     /**
      * Empty default constructor.
-     * You need to assign/copy this instance to a NVSStringValue
+     * You need to assign/copy this instance to a NVSValue
      * before actually using it.
      */
-    NVSStringValue() : nvs(std::numeric_limits<nvs_handle_t>::max()), _key(), _value(), _exists(false) {}
+    NVSValue() : nvs(std::numeric_limits<nvs_handle_t>::max()), _key(), _value(), _exists(false) {}
     
-    NVSStringValue(NVSStringValue& copy): nvs(copy.nvs), _key(copy._key), _value(copy._value), _exists(copy._exists) {
+    NVSValue(NVSValue& copy): nvs(copy.nvs), _key(copy._key), _value(copy._value), _exists(copy._exists) {
         // Read value from NVS
         if(nvs != std::numeric_limits<nvs_handle_t>::max()) {
             this->updateFromNVS();
         }
     }
 
-    NVSStringValue(NVSStringValue&& copy): nvs(std::move(copy.nvs)), _key(std::move(copy._key)), _value(std::move(copy._value)), _exists(std::move(copy._exists)) {
+    NVSValue(NVSValue&& copy): nvs(std::move(copy.nvs)), _key(std::move(copy._key)), _value(std::move(copy._value)), _exists(std::move(copy._exists)) {
         // Read value from NVS
         if(nvs != std::numeric_limits<nvs_handle_t>::max()) {
             this->updateFromNVS();
         }
     }
-    NVSStringValue& operator=(NVSStringValue& copy) {
+    NVSValue& operator=(NVSValue& copy) {
         nvs = copy.nvs;
         _key = copy._key;
         _value = copy._value;
@@ -44,7 +45,7 @@ public:
         return *this;
     }
 
-    NVSStringValue& operator=(NVSStringValue&& copy) {
+    NVSValue& operator=(NVSValue&& copy) {
         nvs = std::move(copy.nvs);
         _key = std::move(copy._key);
         _value = std::move(copy._value);
@@ -58,7 +59,7 @@ public:
     /**
      * Main constructor.
      */
-    NVSStringValue(nvs_handle_t nvs, const std::string& key) : nvs(nvs), _key(key), _value() {
+    NVSValue(nvs_handle_t nvs, const std::string& key) : nvs(nvs), _key(key), _value() {
         this->updateFromNVS();
     }
 
@@ -129,7 +130,7 @@ public:
         NVSPrintf(NVSLogLevel::Trace, "Found that NVS key %s has value size %d", _key.c_str(), value_size);
         // Step 2: Allocate temporary buffer to read into
         // Step 3: Read value into temporary buffer.
-        esp_err_t err;
+        esp_err_t err
         if((err = nvs_get_blob(nvs, _key.c_str(), &value, &value_size)) != ESP_OK) {
             // "Doesn't exist" has already been handled before, so this is an actual error.
             // We assume that the value did not change between reading the size (step 1) and now.
