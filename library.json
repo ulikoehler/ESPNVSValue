@@ -21,6 +21,6 @@
     "homepage": "https://github.com/ulikoehler/ESPNVSValue",
     "dependencies": {
     },
-    "frameworks": "arduino",
+    "frameworks": "*",
     "platforms": "espressif32"
 }

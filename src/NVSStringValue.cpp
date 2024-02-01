@@ -126,8 +126,6 @@ NVSUpdateResult NVSStringValue::set(const std::string& newValue) {
     return NVSUpdateResult::Updated;
 }
 
-#include <Arduino.h>
-
 NVSUpdateResult NVSStringValue::set(const uint8_t* data, size_t size) {
     std::string str((const char*)data, size);
     return set(str);
