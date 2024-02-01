@@ -1,7 +1,9 @@
 #include "NVSStringValue.hpp"
 #include <limits>
 #include <cstring>
+
 #include "NVSUtils.hpp"
+#include "NVSLog.hpp"
 
 NVSStringValue::NVSStringValue() : nvs(std::numeric_limits<nvs_handle_t>::max()), _key(), _value(), _exists(false) {
     // Not actually initialized. Can't read value from NVS
