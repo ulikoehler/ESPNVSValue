@@ -1,5 +1,6 @@
 #include "NVSLog.hpp"
 #include <cstdio>
+#include <cstdarg>
 
 volatile NVSLogLevel _logLevel = NVSLogLevel::Info;
 
@@ -8,13 +9,13 @@ void NVSSetLogLevel(NVSLogLevel level) {
 }
 
 // For NVS high level driver
-void NVSPrintf(NVSLogLevel level, const char * format, ... ) __attribute__ ((weak)) {
+__attribute__ ((weak)) void NVSPrintf(NVSLogLevel level, const char * format, ... ) {
     va_list args;
     va_start(args, format);
     if(level <= _logLevel) {
         printf("[NVS] [%s] ", NVSLogLevelToString(level));
         vprintf(format, args);
-        print("\n");
+        printf("\n");
     }
     va_end(args);
 }
