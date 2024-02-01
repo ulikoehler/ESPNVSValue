@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 
-enum class NVSUpdateResult : uint8_t {
+enum class NVSUpdateResult : int8_t {
     Updated = 0,
     Unchanged = 1,
     NotInitialized = -1,
