@@ -3,7 +3,7 @@
 #include <cstring>
 
 #include "NVSUtils.hpp"
-#include "NVSUpdateResult.hpp"
+#include "NVSSetResult.hpp"
 #include "NVSLog.hpp"
 
 NVSStringValue::NVSStringValue() : nvs(std::numeric_limits<nvs_handle_t>::max()), _key(), _value(), _exists(false) {
@@ -123,12 +123,12 @@ void NVSStringValue::updateFromNVS() {
 /**
  * @brief Update the value in the NVS and in the current instance
  */
-NVSUpdateResult NVSStringValue::set(const std::string& newValue) {
+NVSSetResult NVSStringValue::set(const std::string& newValue) {
     if(nvs == std::numeric_limits<nvs_handle_t>::max()) {
-        return NVSUpdateResult::NotInitialized;
+        return NVSSetResult::NotInitialized;
     }
     if(_value == newValue) {
-        return NVSUpdateResult::Unchanged;
+        return NVSSetResult::Unchanged;
     }
     // Update local value
     this->_value = newValue;
@@ -137,28 +137,28 @@ NVSUpdateResult NVSStringValue::set(const std::string& newValue) {
     esp_err_t err;
     if((err = nvs_set_blob(nvs, _key.c_str(), newValue.c_str(), newValue.size())) != ESP_OK) {
         NVSPrintf(NVSLogLevel::Critical, "Failed to write NVS key %s: %s", _key.c_str(), esp_err_to_name(err));
-        return NVSUpdateResult::Error;
+        return NVSSetResult::Error;
     }
     // Save to NV storage
     nvs_commit(nvs);
-    return NVSUpdateResult::Updated;
+    return NVSSetResult::Updated;
 }
 
-NVSUpdateResult NVSStringValue::set(const uint8_t* data, size_t size) {
+NVSSetResult NVSStringValue::set(const uint8_t* data, size_t size) {
     std::string str((const char*)data, size);
     return set(str);
 }
 
-NVSUpdateResult NVSStringValue::set(const char* newValue) {
+NVSSetResult NVSStringValue::set(const char* newValue) {
     if(nvs == std::numeric_limits<nvs_handle_t>::max()) {
-        return NVSUpdateResult::NotInitialized;
+        return NVSSetResult::NotInitialized;
     }
     if(newValue == nullptr) {
-        return NVSUpdateResult::Nullptr;
+        return NVSSetResult::Nullptr;
     }
     if(_value == newValue) {
         // No change. Ignore
-        return NVSUpdateResult::Unchanged;
+        return NVSSetResult::Unchanged;
     }
     // Update local value
     size_t len = strlen(newValue);
@@ -167,7 +167,7 @@ NVSUpdateResult NVSStringValue::set(const char* newValue) {
     esp_err_t err;
     if((err = nvs_set_blob(nvs, _key.c_str(), _value.c_str(), len)) != ESP_OK) {
         NVSPrintf(NVSLogLevel::Critical, "Failed to write NVS key %s: %s", _key.c_str(), esp_err_to_name(err));
-        return NVSUpdateResult::Error;
+        return NVSSetResult::Error;
     }
     // For debugging
     NVSPrintf(NVSLogLevel::Trace, "Sucessfully written NVS key %s to value %s of len %d with result %d", _key.c_str(), _value.c_str(), len, err);
@@ -175,5 +175,5 @@ NVSUpdateResult NVSStringValue::set(const char* newValue) {
     this->_exists = true;
     // Save to NV storage
     nvs_commit(nvs);
-    return NVSUpdateResult::Updated;
+    return NVSSetResult::Updated;
 }

@@ -1,6 +1,6 @@
 #include "NVSResult.hpp"
 
-const char* NVSUpdateResultToString(NVSSetResult updateResult) {
+const char* NVSSetResultToString(NVSSetResult updateResult) {
     switch (updateResult) {
         case NVSSetResult::Updated: return "Updated";
         case NVSSetResult::Unchanged: return "Unchanged";

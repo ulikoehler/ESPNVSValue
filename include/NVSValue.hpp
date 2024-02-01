@@ -5,7 +5,7 @@
 
 #include "NVSLog.hpp"
 #include "NVSUtils.hpp"
-#include "NVSUpdateResult.hpp"
+#include "NVSSetResult.hpp"
 
 /**
  * @brief Templated value stored in NVS
@@ -148,7 +148,7 @@ public:
      * @brief Update the value in the NVS and in the current instance
      * The update is skipped if the new value is equal to the current value.
      */
-    NVSUpdateResult set(const T& newValue) {
+    NVSSetResult set(const T& newValue) {
         return set(&newValue);
     }
 
@@ -156,12 +156,12 @@ public:
      * @brief Update the value in the NVS and in the current instance
      * The update is skipped if the new value is equal to the current value.
      */
-    NVSUpdateResult set(const T* newValue) {
+    NVSSetResult set(const T* newValue) {
         if(nvs == std::numeric_limits<nvs_handle_t>::max()) {
-            return NVSUpdateResult::NotInitialized;
+            return NVSSetResult::NotInitialized;
         }
         if(_value == newValue) {
-            return NVSUpdateResult::Unchanged;
+            return NVSSetResult::Unchanged;
         }
         // Update local value
         this->_value = newValue;
@@ -170,11 +170,11 @@ public:
         esp_err_t err;
         if((err = nvs_set_blob(nvs, _key.c_str(), newValue, sizeof(T))) != ESP_OK) {
             NVSPrintf(NVSLogLevel::Critical, "Failed to write NVS key %s: %s", _key.c_str(), esp_err_to_name(err));
-            return NVSUpdateResult::Error;
+            return NVSSetResult::Error;
         }
         // Save to NV storage
         nvs_commit(nvs);
-        return NVSUpdateResult::Updated;
+        return NVSSetResult::Updated;
 
     }
 
@@ -182,7 +182,7 @@ public:
      * @brief Update the value in the NVS and in the current instance
      * The update is skipped if the new value is equal to the current value.
      */
-    NVSUpdateResult set(const uint8_t* data, size_t size);
+    NVSSetResult set(const uint8_t* data, size_t size);
 
     nvs_handle_t nvs;
     std::string _key;
