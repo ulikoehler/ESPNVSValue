@@ -1,4 +1,5 @@
 #include "NVSUtils.hpp"
+#include "NVSLog.hpp"
 
 
 NVSQueryResult NVSValueSize(nvs_handle_t nvs, const std::string& key, size_t& size) {
