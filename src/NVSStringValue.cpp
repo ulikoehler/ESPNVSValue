@@ -10,7 +10,7 @@ NVSStringValue::NVSStringValue() : nvs(std::numeric_limits<nvs_handle_t>::max())
     // Not actually initialized. Can't read value from NVS
 }
 
-NVSStringValue::NVSStringValue(nvs_handle_t nvs, const std::string& key, const std::string& defaultValue) : nvs(nvs), _key(key), _value(), _defaultValue(defaultValue) {
+NVSStringValue::NVSStringValue(nvs_handle_t nvs, const std::string& key, const std::string& defaultValue) : nvs(nvs), _key(key), _value(), _default(defaultValue) {
     // Update if we didn't copy from an empty instance
     if(nvs != std::numeric_limits<nvs_handle_t>::max()) {
         this->updateFromNVS();
@@ -116,7 +116,7 @@ void NVSStringValue::updateFromNVS() {
     _exists = true;
     _value = std::string(buf, value_size);
     // For debugging
-    NVSPrintf(NVSLogLevel::Trace, "Key %s exists in NVS and has value %s", _key.c_str(), _value.c_str());
+    NVSPrintf(NVSLogLevel::Debug, "Key %s exists in NVS and has value %s", _key.c_str(), _value.c_str());
     // Step 5: cleanup
     free(buf);
 }
