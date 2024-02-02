@@ -60,7 +60,7 @@ public:
     /**
      * Main constructor.
      */
-    NVSValue(nvs_handle_t nvs, const std::string& key) : nvs(nvs), _key(key), _value() {
+    NVSValue(nvs_handle_t nvs, const std::string& key, const T& defaultValue = T()) : nvs(nvs), _key(key), _value(), _default(defaultValue) {
         this->updateFromNVS();
     }
 
@@ -112,6 +112,7 @@ public:
                 } else {
                     NVSPrintf(NVSLogLevel::Warning, "Size of value in NVS for key %s (%d bytes) does not match expected size %d", _key.c_str(), value_size, sizeof(T));
                     _exists = false;
+                    _value = _default;
                     return;
                 }
                 break;
@@ -119,6 +120,8 @@ public:
             case NVSQueryResult::NotFound: {
                 // Not found, no error
                 NVSPrintf(NVSLogLevel::Debug, "Key %s does not exist", _key.c_str());
+                _exists = false;
+                _value = _default;
                 return;
             }
             case NVSQueryResult::Error: {
@@ -187,5 +190,6 @@ public:
     nvs_handle_t nvs;
     std::string _key;
     T _value;
+    T _default;
     bool _exists;
 };
