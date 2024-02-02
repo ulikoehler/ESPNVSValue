@@ -135,7 +135,7 @@ public:
         // Step 2: Allocate temporary buffer to read into
         // Step 3: Read value into temporary buffer.
         esp_err_t err;
-        if((err = nvs_get_blob(nvs, _key.c_str(), &value, &value_size)) != ESP_OK) {
+        if((err = nvs_get_blob(nvs, _key.c_str(), (void*)&_value, &value_size)) != ESP_OK) {
             // "Doesn't exist" has already been handled before, so this is an actual error.
             // We assume that the value did not change between reading the size (step 1) and now.
             // In case that assumption is value, this will fail with ESP_ERR_NVS_INVALID_LENGTH.
@@ -144,7 +144,7 @@ public:
         }
         // Step 4: Make string
         // For debugging
-        NVSPrintf(NVSLogLevel::Debug, "Key %s exists in NVS and has value %s", _key.c_str(), _value.c_str());
+        NVSPrintf(NVSLogLevel::Trace, "Key %s exists in NVS", _key.c_str());
     }
 
     /**

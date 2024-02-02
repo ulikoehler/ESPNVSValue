@@ -116,7 +116,7 @@ void NVSStringValue::updateFromNVS() {
     _exists = true;
     _value = std::string(buf, value_size);
     // For debugging
-    NVSPrintf(NVSLogLevel::Debug, "Key %s exists in NVS and has value %s", _key.c_str(), _value.c_str());
+    NVSPrintf(NVSLogLevel::Trace, "Key %s exists in NVS and has value %s", _key.c_str(), _value.c_str());
     // Step 5: cleanup
     free(buf);
 }
