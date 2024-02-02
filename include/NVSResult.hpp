@@ -29,4 +29,4 @@ enum class NVSSetResult : int8_t {
     Error = -3
 };
 
-static const char* NVSSetResultToString(NVSSetResult setResult);
+const char* NVSSetResultToString(NVSSetResult setResult);
