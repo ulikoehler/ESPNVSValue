@@ -29,7 +29,7 @@ public:
     /**
      * Main constructor.
      */
-    NVSStringValue(nvs_handle_t nvs, const std::string& key);
+    NVSStringValue(nvs_handle_t nvs, const std::string& key, const std::string& defaultValue="");
 
     const std::string& key() const;
     const std::string& value() const;
@@ -90,5 +90,8 @@ public:
     nvs_handle_t nvs;
     std::string _key;
     std::string _value;
+    // Default value to use if the key does not exist
+    // This is not automatically written
+    std::string _default;
     bool _exists;
 };

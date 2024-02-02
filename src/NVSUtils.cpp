@@ -1,7 +1,6 @@
 #include "NVSUtils.hpp"
 #include "NVSLog.hpp"
 
-
 NVSQueryResult NVSValueSize(nvs_handle_t nvs, const std::string& key, size_t& size) {
     esp_err_t err;
     if((err = nvs_get_blob(nvs, key.c_str(), nullptr, &size)) != ESP_OK) {
