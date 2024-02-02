@@ -163,15 +163,15 @@ public:
         if(nvs == std::numeric_limits<nvs_handle_t>::max()) {
             return NVSSetResult::NotInitialized;
         }
-        if(_value == newValue) {
+        if(_value == *newValue) {
             return NVSSetResult::Unchanged;
         }
         // Update local value
-        this->_value = newValue;
+        this->_value = *newValue;
         this->_exists = true;
         // Write to NVS. Use set_blob to use explicit size if string contains binary data
         esp_err_t err;
-        if((err = nvs_set_blob(nvs, _key.c_str(), newValue, sizeof(T))) != ESP_OK) {
+        if((err = nvs_set_blob(nvs, _key.c_str(), (void*)newValue, sizeof(T))) != ESP_OK) {
             NVSPrintf(NVSLogLevel::Critical, "Failed to write NVS key %s: %s", _key.c_str(), esp_err_to_name(err));
             return NVSSetResult::Error;
         }
