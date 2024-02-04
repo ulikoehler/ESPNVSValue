@@ -77,7 +77,8 @@ public:
     const char* c_str() const = delete;
     const uint8_t* data() const { return &_value; }
 
-    bool empty() const { return _exists; }
+    bool empty() const { return !_exists; }
+    bool exists() const { return _exists; }
 
     size_t size() const { return sizeof(T); }
 
