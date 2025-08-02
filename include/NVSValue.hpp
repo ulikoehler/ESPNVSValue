@@ -69,12 +69,6 @@ public:
     inline T value() const { return _value; }
     inline T& valueRef() const { return _value; }
 
-    /**
-     * @brief Equivalent to .value().c_str()
-     * 
-     * @return const char* 
-     */
-    const char* c_str() const = delete;
     const uint8_t* data() const { return &_value; }
 
     bool empty() const { return !_exists; }
@@ -192,5 +186,169 @@ public:
     std::string _key;
     T _value;
     T _default;
+    bool _exists;
+};
+
+/**
+ * @brief Template specialization for std::string
+ * This specialization uses nvs_set_str/nvs_get_str for more efficient string handling
+ */
+template<>
+class NVSValue<std::string> {
+public:
+    /**
+     * Empty default constructor.
+     * You need to assign/copy this instance to a NVSValue
+     * before actually using it.
+     */
+    NVSValue() : nvs(std::numeric_limits<nvs_handle_t>::max()), _key(), _value(), _exists(false) {}
+    
+    NVSValue(NVSValue& copy): nvs(copy.nvs), _key(copy._key), _value(copy._value), _exists(copy._exists) {
+        // Read value from NVS
+        if(nvs != std::numeric_limits<nvs_handle_t>::max()) {
+            this->updateFromNVS();
+        }
+    }
+
+    NVSValue(NVSValue&& copy): nvs(std::move(copy.nvs)), _key(std::move(copy._key)), _value(std::move(copy._value)), _exists(std::move(copy._exists)) {
+        // Read value from NVS
+        if(nvs != std::numeric_limits<nvs_handle_t>::max()) {
+            this->updateFromNVS();
+        }
+    }
+
+    NVSValue& operator=(NVSValue& copy) {
+        nvs = copy.nvs;
+        _key = copy._key;
+        _value = copy._value;
+
+        if(nvs != std::numeric_limits<nvs_handle_t>::max()) {
+            this->updateFromNVS();
+        }
+        return *this;
+    }
+
+    NVSValue& operator=(NVSValue&& copy) {
+        nvs = std::move(copy.nvs);
+        _key = std::move(copy._key);
+        _value = std::move(copy._value);
+        
+        if(nvs != std::numeric_limits<nvs_handle_t>::max()) {
+            this->updateFromNVS();
+        }
+        return *this;
+    }
+
+    /**
+     * Main constructor.
+     */
+    NVSValue(nvs_handle_t nvs, const std::string& key, const std::string& defaultValue = std::string()) : nvs(nvs), _key(key), _value(), _default(defaultValue) {
+        this->updateFromNVS();
+    }
+
+    const std::string& key() const { return _key; }
+
+    inline std::string value() const { return _value; }
+    inline std::string& valueRef() { return _value; }
+    inline const std::string& valueRef() const { return _value; }
+
+    /**
+     * @brief Equivalent to .value().c_str()
+     * 
+     * @return const char* 
+     */
+    const char* c_str() const { return _value.c_str(); }
+    const uint8_t* data() const { return reinterpret_cast<const uint8_t*>(_value.data()); }
+
+    bool empty() const { return !_exists || _value.empty(); }
+    bool exists() const { return _exists; }
+
+    size_t size() const { return _value.size(); }
+
+    /**
+     * @brief Read the value from the NVS storage
+     * This is automatically called in the constructor,
+     * so you only need to call this if the NVS value has been updated
+     */
+    void updateFromNVS() {
+        // For debugging
+        NVSPrintf(NVSLogLevel::Trace, "Reading string key %s", _key.c_str());
+        if(nvs == std::numeric_limits<nvs_handle_t>::max()) {
+            NVSPrintf(NVSLogLevel::Critical, "Invalid NVS instance");
+            return;
+        }
+
+        // Step 1: Get size of string value in NVS
+        size_t value_size = 0;
+        esp_err_t err = nvs_get_str(nvs, _key.c_str(), nullptr, &value_size);
+        
+        if(err == ESP_ERR_NVS_NOT_FOUND) {
+            // Not found, use default value
+            NVSPrintf(NVSLogLevel::Debug, "String key %s does not exist", _key.c_str());
+            _exists = false;
+            _value = _default;
+            return;
+        } else if(err != ESP_OK) {
+            // Other error
+            NVSPrintf(NVSLogLevel::Error, "Failed to get size of NVS string key %s: %s", _key.c_str(), esp_err_to_name(err));
+            _exists = false;
+            _value = _default;
+            return;
+        }
+
+        // For debugging
+        NVSPrintf(NVSLogLevel::Trace, "Found that NVS string key %s has value size %d", _key.c_str(), value_size);
+        
+        // Step 2: Allocate string buffer and read value
+        _value.resize(value_size - 1); // nvs_get_str includes null terminator in size
+        if((err = nvs_get_str(nvs, _key.c_str(), &_value[0], &value_size)) != ESP_OK) {
+            NVSPrintf(NVSLogLevel::Warning, "Failed to read NVS string key %s: %s", _key.c_str(), esp_err_to_name(err));
+            _exists = false;
+            _value = _default;
+            return;
+        }
+        
+        _exists = true;
+        // For debugging
+        NVSPrintf(NVSLogLevel::Trace, "String key %s exists in NVS with value: %s", _key.c_str(), _value.c_str());
+    }
+
+    /**
+     * @brief Update the value in the NVS and in the current instance
+     * The update is skipped if the new value is equal to the current value.
+     */
+    NVSSetResult set(const std::string& newValue) {
+        if(nvs == std::numeric_limits<nvs_handle_t>::max()) {
+            return NVSSetResult::NotInitialized;
+        }
+        if(_value == newValue) {
+            return NVSSetResult::Unchanged;
+        }
+        // Update local value
+        this->_value = newValue;
+        this->_exists = true;
+        // Write to NVS using nvs_set_str for strings
+        esp_err_t err;
+        if((err = nvs_set_str(nvs, _key.c_str(), newValue.c_str())) != ESP_OK) {
+            NVSPrintf(NVSLogLevel::Critical, "Failed to write NVS string key %s: %s", _key.c_str(), esp_err_to_name(err));
+            return NVSSetResult::Error;
+        }
+        // Save to NV storage
+        nvs_commit(nvs);
+        return NVSSetResult::Updated;
+    }
+
+    /**
+     * @brief Update the value in the NVS and in the current instance
+     * The update is skipped if the new value is equal to the current value.
+     */
+    NVSSetResult set(const char* newValue) {
+        return set(std::string(newValue));
+    }
+
+    nvs_handle_t nvs;
+    std::string _key;
+    std::string _value;
+    std::string _default;
     bool _exists;
 };
