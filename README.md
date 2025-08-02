@@ -37,6 +37,7 @@ extern std::optional<nvs_handle_t> nvsHandle;
 NVSConfig.cpp
 ```c++
 #include "NVSConfig.hpp"
+#include "NVSUtils.hpp" // InitializeNVS()
 
 #include <Arduino.h>
 
@@ -47,38 +48,18 @@ NVSStringValue serialNumber;
 
 NVSValue<float> voltages[NumChannels];
 
-static std::optional<nvs_handle_t> InitializeNVS() {
-    // Initialize NVS
-    esp_err_t ret = nvs_flash_init();
-    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-        // NVS partition was truncated and needs to be erased
-        // Retry nvs_flash_init
-        ESP_ERROR_CHECK(nvs_flash_erase());
-        ret = nvs_flash_init();
-    }
-    ESP_ERROR_CHECK(ret);
-
-    // Open
-    nvs_handle_t handle;
-    ret = nvs_open("storage", NVS_READWRITE, &handle);
-    if (ret != ESP_OK) {
-        return std::nullopt;
-    }
-
-    return handle;
-}
-
 void InitializeNVSConfig() {
-    nvsHandle = InitializeNVS();
+    nvsHandle = InitializeNVS(/*namespace=*/"storage");
     if (!nvsHandle.has_value()) {
-        Serial.println("NVS could not be initialized");
+        ESP_LOGI("NVS could not be initialized");
         return; // Do not continue if NVS could not be initialized
     }
-    // NOTE: last argument is the default value
-    description = NVSStringValue(nvsHandle.value(), "description", "");
 
-    voltages[0] = NVSValue<float>(nvsHandle.value(), "channel1Voltage", 0.1f);
-    voltages[1] = NVSValue<float>(nvsHandle.value(), "channel2Voltage", 0.1f);
-    voltages[2] = NVSValue<float>(nvsHandle.value(), "channel3Voltage", 0.1f);
+    // Read or initialize values
+    description = NVSStringValue(nvsHandle.value(), "description", /*default=*/"");
+
+    voltages[0] = NVSValue<float>(nvsHandle.value(), "channel1Voltage", /*default=*/0.1f);
+    voltages[1] = NVSValue<float>(nvsHandle.value(), "channel2Voltage", /*default=*/0.1f);
+    voltages[2] = NVSValue<float>(nvsHandle.value(), "channel3Voltage", /*default=*/0.1f);
 }
 ```

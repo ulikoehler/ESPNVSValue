@@ -15,3 +15,28 @@ NVSQueryResult NVSValueSize(nvs_handle_t nvs, const std::string& key, size_t& si
     }
     return NVSQueryResult::OK;
 }
+
+std::optional<nvs_handle_t> InitializeNVS(const char* namespace, bool allowReinit) {
+    // Initialize NVS
+    esp_err_t ret = nvs_flash_init();
+    if (allowReinit && (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND || ret == ESP_ERR_NVS_INVALID_STATE)) {
+        // NVS partition was truncated and needs to be erased
+        // Retry nvs_flash_init
+        nvs_flash_erase(); // Without error check
+        ret = nvs_flash_init();
+    }
+    if(ret != ESP_OK) {
+        ESP_LOGE("ESPNVSValue", "NVS flash init failed: %s", esp_err_to_name(ret));
+        return std::nullopt;
+    }
+
+    // Open namespace for read/write access
+    nvs_handle_t handle;
+    ret = nvs_open(namespace, NVS_READWRITE, &handle);
+    if (ret != ESP_OK) {
+        NVSPrintf(NVSLogLevel::Error, "Failed to open NVS namespace '%s': %s", namespace, esp_err_to_name(ret));
+        return std::nullopt;
+    }
+
+    return handle;
+}
