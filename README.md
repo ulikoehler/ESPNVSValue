@@ -28,7 +28,7 @@ extern NVSStringValue description;
 constexpr size_t NumChannels = 3;
 extern NVSValue<float> voltages[NumChannels];
 
-// Call this in setup()
+// Call this in setup() or in app_main()
 void InitializeNVSConfig();
 
 extern std::optional<nvs_handle_t> nvsHandle;
@@ -51,7 +51,7 @@ NVSValue<float> voltages[NumChannels];
 void InitializeNVSConfig() {
     nvsHandle = InitializeNVS(/*namespace=*/"storage");
     if (!nvsHandle.has_value()) {
-        ESP_LOGI("NVS could not be initialized");
+        ESP_LOGI("MyProductNVS", "NVS could not be initialized");
         return; // Do not continue if NVS could not be initialized
     }
 
