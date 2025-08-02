@@ -35,7 +35,7 @@ NVSQueryResult NVSValueSize(nvs_handle_t nvs, const std::string& key, size_t& si
  * opens the specified namespace for read/write operations. It handles common
  * initialization errors by erasing and reinitializing the NVS partition if needed.
  * 
- * @param namespace The name of the NVS namespace to open
+ * @param namespc The name of the NVS namespace to open
  * @param allowReinit Whether to allow reinitialization of the NVS partition when errors occur.
  *                    If true, the partition will be erased and reinitialized on errors like
  *                    ESP_ERR_NVS_NO_FREE_PAGES, ESP_ERR_NVS_NEW_VERSION_FOUND, or ESP_ERR_NVS_INVALID_STATE.
@@ -46,4 +46,4 @@ NVSQueryResult NVSValueSize(nvs_handle_t nvs, const std::string& key, size_t& si
  * @note The caller is responsible for closing the returned handle using nvs_close()
  * @note If allowReinit is true and the NVS partition is corrupted or incompatible, it will be erased and reinitialized
  */
-std::optional<nvs_handle_t> InitializeNVS(const char* namespace, bool allowReinit = true);
+std::optional<nvs_handle_t> InitializeNVS(const char* namespc, bool allowReinit = true);

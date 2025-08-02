@@ -7,7 +7,8 @@ You can use `NVSStringValue` to store a string. You can also use `NVSValue<float
 
 ## Usage example
 
-NVSConfig.hpp
+### `MyNVS.hpp`
+
 ```c++
 #pragma once
 
@@ -29,14 +30,15 @@ constexpr size_t NumChannels = 3;
 extern NVSValue<float> voltages[NumChannels];
 
 // Call this in setup() or in app_main()
-void InitializeNVSConfig();
+void InitializeMyNVS();
 
 extern std::optional<nvs_handle_t> nvsHandle;
 ```
 
-NVSConfig.cpp
+### `MyNVS.cpp`
+
 ```c++
-#include "NVSConfig.hpp"
+#include "MyNVS.hpp"
 #include "NVSUtils.hpp" // InitializeNVS()
 
 #include <Arduino.h>
@@ -48,8 +50,9 @@ NVSStringValue serialNumber;
 
 NVSValue<float> voltages[NumChannels];
 
-void InitializeNVSConfig() {
-    nvsHandle = InitializeNVS(/*namespace=*/"storage");
+void InitializeMyNVS() {
+    // NOTE: Namespace has a length limit of 15 characters!
+    nvsHandle = InitializeNVS(/*namespace=*/"myproduct");
     if (!nvsHandle.has_value()) {
         ESP_LOGI("MyProductNVS", "NVS could not be initialized");
         return; // Do not continue if NVS could not be initialized
@@ -61,5 +64,55 @@ void InitializeNVSConfig() {
     voltages[0] = NVSValue<float>(nvsHandle.value(), "channel1Voltage", /*default=*/0.1f);
     voltages[1] = NVSValue<float>(nvsHandle.value(), "channel2Voltage", /*default=*/0.1f);
     voltages[2] = NVSValue<float>(nvsHandle.value(), "channel3Voltage", /*default=*/0.1f);
+}
+```
+
+
+### `main.ino` (Arduino)
+
+For Arduino, here's how to use it:
+
+```c++
+#include "MyNVS.hpp"
+
+void setup() {
+    Serial.begin(115200);
+    InitializeMyNVS();
+
+    if (nvsHandle.has_value()) {
+        Serial.println("NVS initialized successfully");
+        Serial.printf("Description: %s\n", description.get().c_str());
+        for (size_t i = 0; i < NumChannels; ++i) {
+            Serial.printf("Channel %zu Voltage: %.2f V\n", i + 1, voltages[i].get());
+        }
+    } else {
+        Serial.println("Failed to initialize NVS");
+    }
+
+    // Example of setting a new value
+    description.set("New system description");
+}
+```
+
+### `main.cpp` (ESP-IDF)
+
+```c++
+#include "MyNVS.hpp"
+
+extern "C" void app_main() {
+    InitializeMyNVS();
+
+    if (nvsHandle.has_value()) {
+        ESP_LOGI("MyProductNVS", "NVS initialized successfully");
+        ESP_LOGI("MyProductNVS", "Description: %s", description.get().c_str());
+        for (size_t i = 0; i < NumChannels; ++i) {
+            ESP_LOGI("MyProductNVS", "Channel %zu Voltage: %.2f V", i + 1, voltages[i].get());
+        }
+    } else {
+        ESP_LOGE("MyProductNVS", "Failed to initialize NVS");
+    }
+
+    // Example of setting a new value
+    description.set("New system description");
 }
 ```

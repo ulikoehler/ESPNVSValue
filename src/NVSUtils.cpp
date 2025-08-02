@@ -1,6 +1,8 @@
 #include "NVSUtils.hpp"
 #include "NVSLog.hpp"
 
+#include <nvs_flash.h>
+
 NVSQueryResult NVSValueSize(nvs_handle_t nvs, const std::string& key, size_t& size) {
     esp_err_t err;
     if((err = nvs_get_blob(nvs, key.c_str(), nullptr, &size)) != ESP_OK) {
@@ -16,7 +18,7 @@ NVSQueryResult NVSValueSize(nvs_handle_t nvs, const std::string& key, size_t& si
     return NVSQueryResult::OK;
 }
 
-std::optional<nvs_handle_t> InitializeNVS(const char* namespace, bool allowReinit) {
+std::optional<nvs_handle_t> InitializeNVS(const char* namespc, bool allowReinit) {
     // Initialize NVS
     esp_err_t ret = nvs_flash_init();
     if (allowReinit && (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND || ret == ESP_ERR_NVS_INVALID_STATE)) {
@@ -26,15 +28,15 @@ std::optional<nvs_handle_t> InitializeNVS(const char* namespace, bool allowReini
         ret = nvs_flash_init();
     }
     if(ret != ESP_OK) {
-        ESP_LOGE("ESPNVSValue", "NVS flash init failed: %s", esp_err_to_name(ret));
+        NVSPrintf(NVSLogLevel::Error, "NVS flash init failed: %s", esp_err_to_name(ret));
         return std::nullopt;
     }
 
     // Open namespace for read/write access
     nvs_handle_t handle;
-    ret = nvs_open(namespace, NVS_READWRITE, &handle);
+    ret = nvs_open(namespc, NVS_READWRITE, &handle);
     if (ret != ESP_OK) {
-        NVSPrintf(NVSLogLevel::Error, "Failed to open NVS namespace '%s': %s", namespace, esp_err_to_name(ret));
+        NVSPrintf(NVSLogLevel::Error, "Failed to open NVS namespace '%s': %s", namespc, esp_err_to_name(ret));
         return std::nullopt;
     }
 
