@@ -2,10 +2,21 @@
 #include <nvs.h>
 #include <string>
 #include <limits>
+#include <type_traits>
 
 #include "NVSLog.hpp"
 #include "NVSUtils.hpp"
 #include "NVSResult.hpp"
+
+// Base class used for runtime enumeration of all NVS values.  Add new
+// virtual methods if additional introspection is required by callers.
+class NVSValueBase {
+public:
+    virtual ~NVSValueBase() = default;
+    virtual const std::string& key() const = 0;
+    virtual bool exists() const = 0;
+    virtual std::string asString() const = 0;
+};
 
 /**
  * @brief Templated value stored in NVS
@@ -13,7 +24,7 @@
  * The memory for the given value is directly allocated in the NVS.
  */
 template<typename T>
-class NVSValue {
+class NVSValue : public NVSValueBase {
 public:
     /**
      * Empty default constructor.
@@ -64,7 +75,16 @@ public:
         this->updateFromNVS();
     }
 
-    const std::string& key() const;
+    // NVSValueBase implementation
+    const std::string& key() const override { return _key; }
+    bool exists() const override { return _exists; }
+    std::string asString() const override {
+        if constexpr (std::is_same_v<T, std::string>) {
+            return _value;
+        } else {
+            return std::to_string(_value);
+        }
+    }
 
     inline T value() const { return _value; }
     inline T& valueRef() const { return _value; }
@@ -246,7 +266,9 @@ public:
         this->updateFromNVS();
     }
 
-    const std::string& key() const { return _key; }
+    const std::string& key() const override { return _key; }
+    bool exists() const override { return _exists; }
+    std::string asString() const override { return _value; }
 
     inline std::string value() const { return _value; }
     inline std::string& valueRef() { return _value; }
