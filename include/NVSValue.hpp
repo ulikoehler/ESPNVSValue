@@ -92,7 +92,7 @@ public:
     const uint8_t* data() const { return &_value; }
 
     bool empty() const { return !_exists; }
-    bool exists() const { return _exists; }
+    // exists() is already declared above with override
 
     size_t size() const { return sizeof(T); }
 
@@ -214,7 +214,7 @@ public:
  * This specialization uses nvs_set_str/nvs_get_str for more efficient string handling
  */
 template<>
-class NVSValue<std::string> {
+class NVSValue<std::string> : public NVSValueBase {
 public:
     /**
      * Empty default constructor.
@@ -283,7 +283,7 @@ public:
     const uint8_t* data() const { return reinterpret_cast<const uint8_t*>(_value.data()); }
 
     bool empty() const { return !_exists || _value.empty(); }
-    bool exists() const { return _exists; }
+    // exists() is already declared above with override
 
     size_t size() const { return _value.size(); }
 
