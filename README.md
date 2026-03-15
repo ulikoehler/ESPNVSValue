@@ -5,6 +5,8 @@ NVS is the [ESP32 **Non-volatile storage library**](https://www.ecosia.org/searc
 
 You can use `NVSStringValue` to store a string. You can also use `NVSValue<float>` to store a float. This works with all types including custom types.
 
+If you want values to be read from NVS on demand instead of being cached in memory, use `NVSLazyValue<T>` from `NVSLazyValue.hpp`. Its API is intentionally close to `NVSValue<T>`, but every call to `value()` performs a fresh read.
+
 ## Usage example
 
 ### `MyNVS.hpp`
