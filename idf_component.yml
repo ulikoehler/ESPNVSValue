@@ -1,3 +1,8 @@
+version: "1.1.0"
+description: "Store arbitrary components in NVS"
+url: "https://github.com/ulikoehler/ESPNVSValue"
+license: "Apache License v2.0"
+
 ## IDF Component Manager Manifest File
 dependencies:
   ## Required IDF version
