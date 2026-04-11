@@ -8,6 +8,19 @@
 #include "NVSUtils.hpp"
 #include "NVSResult.hpp"
 
+namespace nvs_value_detail {
+template<typename T>
+std::string ToBinaryString(const T& value) {
+    using DecayedT = std::decay_t<T>;
+
+    if constexpr (std::is_same_v<DecayedT, std::string>) {
+        return value;
+    } else {
+        return std::string(reinterpret_cast<const char*>(&value), sizeof(DecayedT));
+    }
+}
+} // namespace nvs_value_detail
+
 // Base class used for runtime enumeration of all NVS values.  Add new
 // virtual methods if additional introspection is required by callers.
 class NVSValueBase {
@@ -79,11 +92,7 @@ public:
     const std::string& key() const override { return _key; }
     bool exists() const override { return _exists; }
     std::string asString() const override {
-        if constexpr (std::is_same_v<T, std::string>) {
-            return _value;
-        } else {
-            return std::to_string(_value);
-        }
+        return nvs_value_detail::ToBinaryString(_value);
     }
 
     inline T value() const { return _value; }

@@ -45,11 +45,7 @@ public:
     }
 
     std::string asString() const override {
-        if constexpr (std::is_same_v<T, std::string>) {
-            return value();
-        } else {
-            return std::to_string(value());
-        }
+        return nvs_value_detail::ToBinaryString(value());
     }
 
     T value() const {
