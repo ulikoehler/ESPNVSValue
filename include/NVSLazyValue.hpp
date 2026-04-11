@@ -44,6 +44,12 @@ public:
         return valueSize == sizeof(T);
     }
 
+    /**
+     * @brief Return the raw bytes of the stored value.
+     *
+     * For non-string types, this returns the binary representation of the
+     * NVS value in a std::string.
+     */
     std::string asString() const override {
         return nvs_value_detail::ToBinaryString(value());
     }
@@ -191,6 +197,9 @@ public:
         return IsInitialized() && NVSValueSize(nvs, _key, valueSize) == NVSQueryResult::OK;
     }
 
+    /**
+     * @brief Return the stored string value unchanged.
+     */
     std::string asString() const override {
         return value();
     }

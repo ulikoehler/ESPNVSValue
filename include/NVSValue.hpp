@@ -28,6 +28,13 @@ public:
     virtual ~NVSValueBase() = default;
     virtual const std::string& key() const = 0;
     virtual bool exists() const = 0;
+    /**
+     * @brief Return the stored value as a std::string.
+     *
+     * For non-string types, implementations return the raw binary bytes of
+     * the stored object in a std::string. For string specializations, the
+     * stored text is returned unchanged.
+     */
     virtual std::string asString() const = 0;
 };
 
@@ -91,6 +98,12 @@ public:
     // NVSValueBase implementation
     const std::string& key() const override { return _key; }
     bool exists() const override { return _exists; }
+    /**
+     * @brief Return the raw bytes of the stored value.
+     *
+     * This returns the binary representation of _value in a std::string;
+     * it does not attempt a textual conversion or formatting.
+     */
     std::string asString() const override {
         return nvs_value_detail::ToBinaryString(_value);
     }
@@ -277,6 +290,9 @@ public:
 
     const std::string& key() const override { return _key; }
     bool exists() const override { return _exists; }
+    /**
+     * @brief Return the stored string value unchanged.
+     */
     std::string asString() const override { return _value; }
 
     inline std::string value() const { return _value; }
