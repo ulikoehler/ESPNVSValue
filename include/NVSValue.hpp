@@ -232,8 +232,10 @@ public:
 };
 
 /**
- * @brief Template specialization for std::string
- * This specialization uses nvs_set_str/nvs_get_str for more efficient string handling
+ * @brief Template specialization for std::string.
+ *
+ * This specialization primarily stores values as NVS strings and falls back to
+ * blob reads for compatibility with binary-backed string data.
  */
 template<>
 class NVSValue<std::string> : public NVSValueBase {
@@ -325,31 +327,7 @@ public:
             return;
         }
 
-        // Step 1: Get size of string value in NVS
-        size_t value_size = 0;
-        esp_err_t err = nvs_get_str(nvs, _key.c_str(), nullptr, &value_size);
-        
-        if(err == ESP_ERR_NVS_NOT_FOUND) {
-            // Not found, use default value
-            NVSPrintf(NVSLogLevel::Debug, "String key %s does not exist", _key.c_str());
-            _exists = false;
-            _value = _default;
-            return;
-        } else if(err != ESP_OK) {
-            // Other error
-            NVSPrintf(NVSLogLevel::Error, "Failed to get size of NVS string key %s: %s", _key.c_str(), esp_err_to_name(err));
-            _exists = false;
-            _value = _default;
-            return;
-        }
-
-        // For debugging
-        NVSPrintf(NVSLogLevel::Trace, "Found that NVS string key %s has value size %d", _key.c_str(), value_size);
-        
-        // Step 2: Allocate string buffer and read value
-        _value.resize(value_size - 1); // nvs_get_str includes null terminator in size
-        if((err = nvs_get_str(nvs, _key.c_str(), &_value[0], &value_size)) != ESP_OK) {
-            NVSPrintf(NVSLogLevel::Warning, "Failed to read NVS string key %s: %s", _key.c_str(), esp_err_to_name(err));
+        if(NVSReadStringValue(nvs, _key, _value, NVSStringStoragePreference::PreferString) != NVSQueryResult::OK) {
             _exists = false;
             _value = _default;
             return;
@@ -357,7 +335,7 @@ public:
         
         _exists = true;
         // For debugging
-        NVSPrintf(NVSLogLevel::Trace, "String key %s exists in NVS with value: %s", _key.c_str(), _value.c_str());
+        NVSPrintf(NVSLogLevel::Trace, "String key %s exists in NVS with %d bytes", _key.c_str(), _value.size());
     }
 
     /**
@@ -374,7 +352,7 @@ public:
         // Update local value
         this->_value = newValue;
         this->_exists = true;
-        // Write to NVS using nvs_set_str for strings
+        // Write using NVS string storage. Blob-backed values remain readable.
         esp_err_t err;
         if((err = nvs_set_str(nvs, _key.c_str(), newValue.c_str())) != ESP_OK) {
             NVSPrintf(NVSLogLevel::Critical, "Failed to write NVS string key %s: %s", _key.c_str(), esp_err_to_name(err));

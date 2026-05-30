@@ -194,7 +194,7 @@ public:
 
     bool exists() const override {
         size_t valueSize = 0;
-        return IsInitialized() && NVSValueSize(nvs, _key, valueSize) == NVSQueryResult::OK;
+        return IsInitialized() && NVSStringValueSize(nvs, _key, valueSize, NVSStringStoragePreference::PreferBlob) == NVSQueryResult::OK;
     }
 
     /**
@@ -209,24 +209,8 @@ public:
             return _default;
         }
 
-        size_t valueSize = 0;
-        switch(NVSValueSize(nvs, _key, valueSize)) {
-            case NVSQueryResult::OK:
-                break;
-            case NVSQueryResult::NotFound:
-                return _default;
-            case NVSQueryResult::Error:
-                return _default;
-        }
-
-        if(valueSize == 0) {
-            return std::string();
-        }
-
-        std::string loadedValue(valueSize, '\0');
-        esp_err_t err = nvs_get_blob(nvs, _key.c_str(), &loadedValue[0], &valueSize);
-        if(err != ESP_OK) {
-            NVSPrintf(NVSLogLevel::Warning, "Failed to read NVS key %s: %s", SafeKey(), esp_err_to_name(err));
+        std::string loadedValue;
+        if(NVSReadStringValue(nvs, _key, loadedValue, NVSStringStoragePreference::PreferBlob) != NVSQueryResult::OK) {
             return _default;
         }
         return loadedValue;
@@ -245,7 +229,7 @@ public:
 
     size_t size() const {
         size_t valueSize = 0;
-        if(exists() && NVSValueSize(nvs, _key, valueSize) == NVSQueryResult::OK) {
+        if(exists() && NVSStringValueSize(nvs, _key, valueSize, NVSStringStoragePreference::PreferBlob) == NVSQueryResult::OK) {
             return valueSize;
         }
         return _default.size();

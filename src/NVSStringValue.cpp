@@ -68,57 +68,14 @@ void NVSStringValue::updateFromNVS() {
         NVSPrintf(NVSLogLevel::Critical, "Invalid NVS instance");
         return;
     }
-    /**
-     * Strategy:
-     *  1. Determine size of value in NVS
-     *  2. Allocate temporary buffer of determined size
-     *  3. Read value from NVS into temporary buffer
-     *  4. Create std::string from value
-     *  5. Cleanup
-     */
-    // Step 1: Get size of key
-    size_t value_size = 0;
-    switch(NVSValueSize(nvs, _key, value_size)) {
-        case NVSQueryResult::OK: {
-            // OK
-            _exists = true;
-            break;
-        }
-        case NVSQueryResult::NotFound: {
-            // Not found, no error
-            _exists = false;
-            _value = _default;
-            NVSPrintf(NVSLogLevel::Debug, "Key %s does not exist", _key.c_str());
-            return;
-        }
-        case NVSQueryResult::Error: {
-            // Error
-            NVSPrintf(NVSLogLevel::Error, "Failed to get size of NVS key %s", _key.c_str());
-            return;
-        }
-    }
-    // For debugging
-    NVSPrintf(NVSLogLevel::Trace, "Found that NVS key %s has value size %d", _key.c_str(), value_size);
-    // Step 2: Allocate temporary buffer to read into
-    char* buf = (char*)malloc(value_size);
-    // Step 3: Read value into temporary buffer.
-    esp_err_t err;
-    if((err = nvs_get_blob(nvs, _key.c_str(), buf, &value_size)) != ESP_OK) {
-        // "Doesn't exist" has already been handled before, so this is an actual error.
-        // We assume that the value did not change between reading the size (step 1) and now.
-        // In case that assumption is value, this will fail with ESP_ERR_NVS_INVALID_LENGTH.
-        // This is extremely unlikely in all usage scenarios, however.
-        NVSPrintf(NVSLogLevel::Warning, "Failed to read NVS key %s: %s", _key.c_str(), esp_err_to_name(err));
-        free(buf);
+    if(NVSReadStringValue(nvs, _key, _value, NVSStringStoragePreference::PreferBlob) != NVSQueryResult::OK) {
+        _exists = false;
+        _value = _default;
         return;
     }
-    // Step 4: Make string
+
     _exists = true;
-    _value = std::string(buf, value_size);
-    // For debugging
-    NVSPrintf(NVSLogLevel::Debug, "Key %s exists in NVS and has value %s", _key.c_str(), _value.c_str());
-    // Step 5: cleanup
-    free(buf);
+    NVSPrintf(NVSLogLevel::Debug, "Key %s exists in NVS and has %d bytes", _key.c_str(), _value.size());
 }
 
 /**
@@ -136,7 +93,7 @@ NVSSetResult NVSStringValue::set(const std::string& newValue) {
     this->_exists = true;
     // Write to NVS. Use set_blob to use explicit size if string contains binary data
     esp_err_t err;
-    if((err = nvs_set_blob(nvs, _key.c_str(), newValue.c_str(), newValue.size())) != ESP_OK) {
+    if((err = nvs_set_blob(nvs, _key.c_str(), newValue.data(), newValue.size())) != ESP_OK) {
         NVSPrintf(NVSLogLevel::Critical, "Failed to write NVS key %s: %s", _key.c_str(), esp_err_to_name(err));
         return NVSSetResult::Error;
     }

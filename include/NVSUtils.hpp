@@ -12,6 +12,11 @@ enum class NVSQueryResult {
     Error = -1      ///< An error occurred during the operation
 };
 
+enum class NVSStringStoragePreference {
+    PreferBlob = 0,
+    PreferString = 1
+};
+
 /**
  * @brief Get the size of a value stored in NVS
  * 
@@ -27,6 +32,26 @@ enum class NVSQueryResult {
  *         - Error: An error occurred during the query
  */
 NVSQueryResult NVSValueSize(nvs_handle_t nvs, const std::string& key, size_t& size);
+
+/**
+ * @brief Get the payload size of a string-like value stored in NVS.
+ *
+ * This queries both blob-backed and legacy string-backed entries. The preferred
+ * storage type is checked first and legacy strings report their payload size
+ * without the trailing null terminator.
+ */
+NVSQueryResult NVSStringValueSize(nvs_handle_t nvs, const std::string& key, size_t& size,
+                                  NVSStringStoragePreference preference = NVSStringStoragePreference::PreferBlob);
+
+/**
+ * @brief Read a string-like value from NVS.
+ *
+ * This accepts both blob-backed values and legacy NVS string entries. The
+ * preferred storage type is queried first, and legacy strings are returned
+ * without their trailing null terminator.
+ */
+NVSQueryResult NVSReadStringValue(nvs_handle_t nvs, const std::string& key, std::string& value,
+                                  NVSStringStoragePreference preference = NVSStringStoragePreference::PreferBlob);
 
 /**
  * @brief Initialize NVS flash and open a namespace
