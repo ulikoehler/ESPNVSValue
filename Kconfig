@@ -1,0 +1,44 @@
+menu "ESPNVSValue"
+
+choice ESPNVSVALUE_LOG_COMPILED_LEVEL_CHOICE
+    prompt "Maximum compiled log level"
+    default ESPNVSVALUE_LOG_COMPILED_LEVEL_TRACE
+    help
+        Select the highest ESPNVSValue log level that should be compiled into
+        this component. Calls above the selected level are replaced with empty
+        macros in NVSLog.hpp so their format strings can be optimized out.
+
+config ESPNVSVALUE_LOG_COMPILED_LEVEL_NONE
+    bool "None"
+
+config ESPNVSVALUE_LOG_COMPILED_LEVEL_CRITICAL
+    bool "Critical"
+
+config ESPNVSVALUE_LOG_COMPILED_LEVEL_ERROR
+    bool "Error"
+
+config ESPNVSVALUE_LOG_COMPILED_LEVEL_WARNING
+    bool "Warning"
+
+config ESPNVSVALUE_LOG_COMPILED_LEVEL_INFO
+    bool "Info"
+
+config ESPNVSVALUE_LOG_COMPILED_LEVEL_DEBUG
+    bool "Debug"
+
+config ESPNVSVALUE_LOG_COMPILED_LEVEL_TRACE
+    bool "Trace"
+
+endchoice
+
+config ESPNVSVALUE_LOG_COMPILED_LEVEL
+    int
+    default 0 if ESPNVSVALUE_LOG_COMPILED_LEVEL_NONE
+    default 0 if ESPNVSVALUE_LOG_COMPILED_LEVEL_CRITICAL
+    default 1 if ESPNVSVALUE_LOG_COMPILED_LEVEL_ERROR
+    default 2 if ESPNVSVALUE_LOG_COMPILED_LEVEL_WARNING
+    default 3 if ESPNVSVALUE_LOG_COMPILED_LEVEL_INFO
+    default 4 if ESPNVSVALUE_LOG_COMPILED_LEVEL_DEBUG
+    default 5 if ESPNVSVALUE_LOG_COMPILED_LEVEL_TRACE
+
+endmenu

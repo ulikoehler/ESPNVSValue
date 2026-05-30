@@ -99,7 +99,7 @@ public:
 
         esp_err_t err = nvs_set_blob(nvs, _key.c_str(), static_cast<const void*>(newValue), sizeof(T));
         if(err != ESP_OK) {
-            NVSPrintf(NVSLogLevel::Critical, "Failed to write NVS key %s: %s", SafeKey(), esp_err_to_name(err));
+            NVSCriticalPrintf("Failed to write NVS key %s: %s", SafeKey(), esp_err_to_name(err));
             return NVSSetResult::Error;
         }
         nvs_commit(nvs);
@@ -134,7 +134,7 @@ private:
 
     NVSQueryResult QueryValueSize(size_t& valueSize) const {
         if(!IsInitialized()) {
-            NVSPrintf(NVSLogLevel::Critical, "Invalid NVS instance or key");
+            NVSCriticalPrintf("Invalid NVS instance or key");
             return NVSQueryResult::Error;
         }
         return NVSValueSize(nvs, _key, valueSize);
@@ -152,8 +152,7 @@ private:
         }
 
         if(valueSize != sizeof(T)) {
-            NVSPrintf(
-                NVSLogLevel::Warning,
+            NVSWarningPrintf(
                 "Size of value in NVS for key %s (%d bytes) does not match expected size %d",
                 SafeKey(),
                 valueSize,
@@ -163,7 +162,7 @@ private:
 
         esp_err_t err = nvs_get_blob(nvs, _key.c_str(), static_cast<void*>(&loadedValue), &valueSize);
         if(err != ESP_OK) {
-            NVSPrintf(NVSLogLevel::Warning, "Failed to read NVS key %s: %s", SafeKey(), esp_err_to_name(err));
+            NVSWarningPrintf("Failed to read NVS key %s: %s", SafeKey(), esp_err_to_name(err));
             return false;
         }
         return true;
@@ -250,7 +249,7 @@ public:
 
         esp_err_t err = nvs_set_blob(nvs, _key.c_str(), newValue.data(), newValue.size());
         if(err != ESP_OK) {
-            NVSPrintf(NVSLogLevel::Critical, "Failed to write NVS key %s: %s", SafeKey(), esp_err_to_name(err));
+            NVSCriticalPrintf("Failed to write NVS key %s: %s", SafeKey(), esp_err_to_name(err));
             return NVSSetResult::Error;
         }
         nvs_commit(nvs);

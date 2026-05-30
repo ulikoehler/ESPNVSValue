@@ -4,8 +4,6 @@
 
 #include "NVSResult.hpp"
 
-void NVSPrintf(const char* format, ...);
-
 /**
  * @brief Abstraction for binary value, represented by a std::string stored in ESP NVS
  * The string can not only be a text but any binary data (including null bytes).

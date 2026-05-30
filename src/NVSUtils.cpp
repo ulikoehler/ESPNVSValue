@@ -8,10 +8,10 @@ NVSQueryResult NVSValueSize(nvs_handle_t nvs, const std::string& key, size_t& si
     if((err = nvs_get_blob(nvs, key.c_str(), nullptr, &size)) != ESP_OK) {
         if(err == ESP_ERR_NVS_NOT_FOUND) {
             // Not found, no error
-            NVSPrintf(NVSLogLevel::Debug, "Key %s does not exist", key.c_str());
+            NVSDebugPrintf("Key %s does not exist", key.c_str());
             return NVSQueryResult::NotFound;
         } else {
-            NVSPrintf(NVSLogLevel::Error, "Failed to get size of NVS key %s: %s", key.c_str(), esp_err_to_name(err));
+            NVSErrorPrintf("Failed to get size of NVS key %s: %s", key.c_str(), esp_err_to_name(err));
             return NVSQueryResult::Error;
         }
     }
@@ -28,7 +28,7 @@ NVSQueryResult QueryBlobStringValueSize(nvs_handle_t nvs, const std::string& key
         return NVSQueryResult::NotFound;
     }
 
-    NVSPrintf(NVSLogLevel::Error, "Failed to get size of blob-backed NVS key %s: %s", key.c_str(), esp_err_to_name(err));
+    NVSErrorPrintf("Failed to get size of blob-backed NVS key %s: %s", key.c_str(), esp_err_to_name(err));
     return NVSQueryResult::Error;
 }
 
@@ -44,7 +44,7 @@ NVSQueryResult QueryLegacyStringValueSize(nvs_handle_t nvs, const std::string& k
         return NVSQueryResult::NotFound;
     }
 
-    NVSPrintf(NVSLogLevel::Error, "Failed to get size of legacy string NVS key %s: %s", key.c_str(), esp_err_to_name(err));
+    NVSErrorPrintf("Failed to get size of legacy string NVS key %s: %s", key.c_str(), esp_err_to_name(err));
     return NVSQueryResult::Error;
 }
 
@@ -59,7 +59,7 @@ NVSQueryResult ReadBlobStringValue(nvs_handle_t nvs, const std::string& key, std
 
         value.resize(size);
         if((err = nvs_get_blob(nvs, key.c_str(), value.data(), &size)) != ESP_OK) {
-            NVSPrintf(NVSLogLevel::Warning, "Failed to read blob-backed NVS key %s: %s", key.c_str(), esp_err_to_name(err));
+            NVSWarningPrintf("Failed to read blob-backed NVS key %s: %s", key.c_str(), esp_err_to_name(err));
             return NVSQueryResult::Error;
         }
         value.resize(size);
@@ -69,7 +69,7 @@ NVSQueryResult ReadBlobStringValue(nvs_handle_t nvs, const std::string& key, std
         return NVSQueryResult::NotFound;
     }
 
-    NVSPrintf(NVSLogLevel::Warning, "Failed to query blob-backed NVS key %s: %s", key.c_str(), esp_err_to_name(err));
+    NVSWarningPrintf("Failed to query blob-backed NVS key %s: %s", key.c_str(), esp_err_to_name(err));
     return NVSQueryResult::Error;
 }
 
@@ -80,13 +80,13 @@ NVSQueryResult ReadLegacyStringValue(nvs_handle_t nvs, const std::string& key, s
         return NVSQueryResult::NotFound;
     }
     if(err != ESP_OK) {
-        NVSPrintf(NVSLogLevel::Warning, "Failed to query legacy string NVS key %s: %s", key.c_str(), esp_err_to_name(err));
+        NVSWarningPrintf("Failed to query legacy string NVS key %s: %s", key.c_str(), esp_err_to_name(err));
         return NVSQueryResult::Error;
     }
 
     std::string buffer(size, '\0');
     if((err = nvs_get_str(nvs, key.c_str(), buffer.data(), &size)) != ESP_OK) {
-        NVSPrintf(NVSLogLevel::Warning, "Failed to read legacy string NVS key %s: %s", key.c_str(), esp_err_to_name(err));
+        NVSWarningPrintf("Failed to read legacy string NVS key %s: %s", key.c_str(), esp_err_to_name(err));
         return NVSQueryResult::Error;
     }
 
@@ -114,7 +114,7 @@ NVSQueryResult NVSStringValueSize(nvs_handle_t nvs, const std::string& key, size
     }
 
     if(secondResult == NVSQueryResult::NotFound) {
-        NVSPrintf(NVSLogLevel::Debug, "Key %s does not exist", key.c_str());
+        NVSDebugPrintf("Key %s does not exist", key.c_str());
     }
     return secondResult;
 }
@@ -138,7 +138,7 @@ NVSQueryResult NVSReadStringValue(nvs_handle_t nvs, const std::string& key, std:
     }
 
     if(secondResult == NVSQueryResult::NotFound) {
-        NVSPrintf(NVSLogLevel::Debug, "Key %s does not exist", key.c_str());
+        NVSDebugPrintf("Key %s does not exist", key.c_str());
     }
     return secondResult;
 }
@@ -153,7 +153,7 @@ std::optional<nvs_handle_t> InitializeNVS(const char* namespc, bool allowReinit)
         ret = nvs_flash_init();
     }
     if(ret != ESP_OK) {
-        NVSPrintf(NVSLogLevel::Error, "NVS flash init failed: %s", esp_err_to_name(ret));
+        NVSErrorPrintf("NVS flash init failed: %s", esp_err_to_name(ret));
         return std::nullopt;
     }
 
@@ -161,7 +161,7 @@ std::optional<nvs_handle_t> InitializeNVS(const char* namespc, bool allowReinit)
     nvs_handle_t handle;
     ret = nvs_open(namespc, NVS_READWRITE, &handle);
     if (ret != ESP_OK) {
-        NVSPrintf(NVSLogLevel::Error, "Failed to open NVS namespace '%s': %s", namespc, esp_err_to_name(ret));
+        NVSErrorPrintf("Failed to open NVS namespace '%s': %s", namespc, esp_err_to_name(ret));
         return std::nullopt;
     }
 

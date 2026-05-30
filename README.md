@@ -7,6 +7,14 @@ You can use `NVSStringValue` to store a string. You can also use `NVSValue<float
 
 If you want values to be read from NVS on demand instead of being cached in memory, use `NVSLazyValue<T>` from `NVSLazyValue.hpp`. Its API is intentionally close to `NVSValue<T>`, but every call to `value()` performs a fresh read.
 
+## Logging
+
+ESPNVSValue now exposes level-specific logging hooks: `NVSCriticalPrintf()`, `NVSErrorPrintf()`, `NVSWarningPrintf()`, `NVSInfoPrintf()`, `NVSDebugPrintf()` and `NVSTracePrintf()`.
+
+Each hook has a weak default implementation inside the component, so your application can override any individual level by providing its own non-weak function with the same signature.
+
+For ESP-IDF builds, `Component config -> ESPNVSValue -> Maximum compiled log level` controls which of these calls are compiled in. Levels above the selected threshold become empty macros in `NVSLog.hpp`, allowing their format strings to be removed at compile time.
+
 ## Usage example
 
 ### `MyNVS.hpp`

@@ -125,9 +125,9 @@ public:
      */
     void updateFromNVS() {
         // For debugging
-        NVSPrintf(NVSLogLevel::Trace, "Reading key %s", _key.c_str());
+        NVSTracePrintf("Reading key %s", _key.c_str());
         if(nvs == std::numeric_limits<nvs_handle_t>::max()) {
-            NVSPrintf(NVSLogLevel::Critical, "Invalid NVS instance");
+            NVSCriticalPrintf("Invalid NVS instance");
             return;
         }
         /**
@@ -147,7 +147,7 @@ public:
                     // Size matches
                     _exists = true;
                 } else {
-                    NVSPrintf(NVSLogLevel::Warning, "Size of value in NVS for key %s (%d bytes) does not match expected size %d", _key.c_str(), value_size, sizeof(T));
+                    NVSWarningPrintf("Size of value in NVS for key %s (%d bytes) does not match expected size %d", _key.c_str(), value_size, sizeof(T));
                     _exists = false;
                     _value = _default;
                     return;
@@ -156,19 +156,19 @@ public:
             }
             case NVSQueryResult::NotFound: {
                 // Not found, no error
-                NVSPrintf(NVSLogLevel::Debug, "Key %s does not exist", _key.c_str());
+                NVSDebugPrintf("Key %s does not exist", _key.c_str());
                 _exists = false;
                 _value = _default;
                 return;
             }
             case NVSQueryResult::Error: {
                 // Error
-                NVSPrintf(NVSLogLevel::Error, "Failed to get size of NVS key %s", _key.c_str());
+                NVSErrorPrintf("Failed to get size of NVS key %s", _key.c_str());
                 return;
             }
         }
         // For debugging
-        NVSPrintf(NVSLogLevel::Trace, "Found that NVS key %s has value size %d", _key.c_str(), value_size);
+        NVSTracePrintf("Found that NVS key %s has value size %d", _key.c_str(), value_size);
         // Step 2: Allocate temporary buffer to read into
         // Step 3: Read value into temporary buffer.
         esp_err_t err;
@@ -177,11 +177,11 @@ public:
             // We assume that the value did not change between reading the size (step 1) and now.
             // In case that assumption is value, this will fail with ESP_ERR_NVS_INVALID_LENGTH.
             // This is extremely unlikely in all usage scenarios, however.
-            NVSPrintf(NVSLogLevel::Warning, "Failed to read NVS key %s: %s", _key.c_str(), esp_err_to_name(err));
+            NVSWarningPrintf("Failed to read NVS key %s: %s", _key.c_str(), esp_err_to_name(err));
         }
         // Step 4: Make string
         // For debugging
-        NVSPrintf(NVSLogLevel::Trace, "Key %s exists in NVS", _key.c_str());
+        NVSTracePrintf("Key %s exists in NVS", _key.c_str());
     }
 
     /**
@@ -209,7 +209,7 @@ public:
         // Write to NVS. Use set_blob to use explicit size if string contains binary data
         esp_err_t err;
         if((err = nvs_set_blob(nvs, _key.c_str(), (void*)newValue, sizeof(T))) != ESP_OK) {
-            NVSPrintf(NVSLogLevel::Critical, "Failed to write NVS key %s: %s", _key.c_str(), esp_err_to_name(err));
+            NVSCriticalPrintf("Failed to write NVS key %s: %s", _key.c_str(), esp_err_to_name(err));
             return NVSSetResult::Error;
         }
         // Save to NV storage
@@ -321,9 +321,9 @@ public:
      */
     void updateFromNVS() {
         // For debugging
-        NVSPrintf(NVSLogLevel::Trace, "Reading string key %s", _key.c_str());
+        NVSTracePrintf("Reading string key %s", _key.c_str());
         if(nvs == std::numeric_limits<nvs_handle_t>::max()) {
-            NVSPrintf(NVSLogLevel::Critical, "Invalid NVS instance");
+            NVSCriticalPrintf("Invalid NVS instance");
             return;
         }
 
@@ -335,7 +335,7 @@ public:
         
         _exists = true;
         // For debugging
-        NVSPrintf(NVSLogLevel::Trace, "String key %s exists in NVS with %d bytes", _key.c_str(), _value.size());
+        NVSTracePrintf("String key %s exists in NVS with %d bytes", _key.c_str(), _value.size());
     }
 
     /**
@@ -355,7 +355,7 @@ public:
         // Write using NVS string storage. Blob-backed values remain readable.
         esp_err_t err;
         if((err = nvs_set_str(nvs, _key.c_str(), newValue.c_str())) != ESP_OK) {
-            NVSPrintf(NVSLogLevel::Critical, "Failed to write NVS string key %s: %s", _key.c_str(), esp_err_to_name(err));
+            NVSCriticalPrintf("Failed to write NVS string key %s: %s", _key.c_str(), esp_err_to_name(err));
             return NVSSetResult::Error;
         }
         // Save to NV storage

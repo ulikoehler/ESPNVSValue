@@ -63,9 +63,9 @@ const std::string& NVSStringValue::value() const {
 
 void NVSStringValue::updateFromNVS() {
     // For debugging
-    NVSPrintf(NVSLogLevel::Trace, "Reading key %s", _key.c_str());
+    NVSTracePrintf("Reading key %s", _key.c_str());
     if(nvs == std::numeric_limits<nvs_handle_t>::max()) {
-        NVSPrintf(NVSLogLevel::Critical, "Invalid NVS instance");
+        NVSCriticalPrintf("Invalid NVS instance");
         return;
     }
     if(NVSReadStringValue(nvs, _key, _value, NVSStringStoragePreference::PreferBlob) != NVSQueryResult::OK) {
@@ -75,7 +75,7 @@ void NVSStringValue::updateFromNVS() {
     }
 
     _exists = true;
-    NVSPrintf(NVSLogLevel::Debug, "Key %s exists in NVS and has %d bytes", _key.c_str(), _value.size());
+    NVSDebugPrintf("Key %s exists in NVS and has %d bytes", _key.c_str(), _value.size());
 }
 
 /**
@@ -94,7 +94,7 @@ NVSSetResult NVSStringValue::set(const std::string& newValue) {
     // Write to NVS. Use set_blob to use explicit size if string contains binary data
     esp_err_t err;
     if((err = nvs_set_blob(nvs, _key.c_str(), newValue.data(), newValue.size())) != ESP_OK) {
-        NVSPrintf(NVSLogLevel::Critical, "Failed to write NVS key %s: %s", _key.c_str(), esp_err_to_name(err));
+        NVSCriticalPrintf("Failed to write NVS key %s: %s", _key.c_str(), esp_err_to_name(err));
         return NVSSetResult::Error;
     }
     // Save to NV storage
@@ -124,11 +124,11 @@ NVSSetResult NVSStringValue::set(const char* newValue) {
     // Write to NVS
     esp_err_t err;
     if((err = nvs_set_blob(nvs, _key.c_str(), _value.c_str(), len)) != ESP_OK) {
-        NVSPrintf(NVSLogLevel::Critical, "Failed to write NVS key %s: %s", _key.c_str(), esp_err_to_name(err));
+        NVSCriticalPrintf("Failed to write NVS key %s: %s", _key.c_str(), esp_err_to_name(err));
         return NVSSetResult::Error;
     }
     // For debugging
-    NVSPrintf(NVSLogLevel::Trace, "Sucessfully written NVS key %s to value %s of len %d with result %d", _key.c_str(), _value.c_str(), len, err);
+    NVSTracePrintf("Sucessfully written NVS key %s to value %s of len %d with result %d", _key.c_str(), _value.c_str(), len, err);
     // Set successfully -> exists is true.
     this->_exists = true;
     // Save to NV storage
